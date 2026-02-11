@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    restart: unless-stopped
+    networks:
+      - devsecops-network
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=devsecopsdb
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=ChangeThisPassword123
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - devsecops-network
+    restart: unless-stopped
+
+  sonarqube:
+    image: sonarqube:community
+    ports:
+      - "9000:9000"
+    environment:
+      - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true
+    volumes:
+      - sonarqube-data:/opt/sonarqube/data
+      - sonarqube-extensions:/opt/sonarqube/extensions
+    networks:
+      - devsecops-network
+    restart: unless-stopped
+
+networks:
+  devsecops-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  sonarqube-data:
+  sonarqube-extensions:
