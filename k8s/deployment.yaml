@@ -2,10 +2,11 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: devsecops-app
+  namespace: devsecops-lab
   labels:
     app: devsecops-app
 spec:
-  replicas: 3
+  replicas: 2
   selector:
     matchLabels:
       app: devsecops-app
@@ -16,7 +17,8 @@ spec:
     spec:
       containers:
       - name: devsecops-app
-        image: YOUR_DOCKER_USERNAME/devsecops-app:latest
+        image: devsecops-app:latest
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 3000
         env:
@@ -43,38 +45,36 @@ spec:
             port: 3000
           initialDelaySeconds: 5
           periodSeconds: 5
-        securityContext:
-          runAsNonRoot: true
-          runAsUser: 1000
-          allowPrivilegeEscalation: false
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: devsecops-app-service
+  namespace: devsecops-lab
 spec:
   selector:
     app: devsecops-app
   ports:
   - port: 80
     targetPort: 3000
-  type: LoadBalancer
+  type: NodePort
 ---
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: devsecops-app-hpa
+  namespace: devsecops-lab
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
     name: devsecops-app
-  minReplicas: 2
-  maxReplicas: 10
+  minReplicas: 1
+  maxReplicas: 3
   metrics:
   - type: Resource
     resource:
       name: cpu
       target:
         type: Utilization
-        averageUtilization: 50
+        averageUtilization: 70
