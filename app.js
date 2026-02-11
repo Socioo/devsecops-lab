@@ -1,27 +1,31 @@
 const express = require('express');
 const app = express();
+const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 
 app.get('/', (req, res) => {
     res.json({
         message: 'DevSecOps CI/CD Pipeline is Running!',
-        status: 'OK',
+        status: 'success',
         timestamp: new Date().toISOString(),
         version: '1.0.0'
     });
 });
 
 app.get('/health', (req, res) => {
-    res.json({ status: 'healthy' });
+    res.status(200).json({ 
+        status: 'healthy',
+        timestamp: new Date().toISOString()
+    });
 });
 
-app.get('/secret-test', (req, res) => {
-    // Intentionally vulnerable code for testing security tools
-    /* eslint-disable no-unused-vars */
-    const secretKey = 'AKIAIOSFODNN7EXAMPLE'; // AWS Key example - for testing only
-    const password = 'admin123'; // Weak password - for testing only
-    /* eslint-enable no-unused-vars */
-    res.json({ message: 'This endpoint has security issues for testing security scanners' });
-});
+// Only start server if this file is run directly
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+    });
+}
 
+// Export for testing
+module.exports = app;
